@@ -1,13 +1,64 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import select, col
-from app.database import get_session
-from app.models import Transaction
+from app.models import Transaction, User
 from app.services.gemini_client import categorize_transactions
+from app.services.risk_engine import extract_features
+import joblib
+import os
 from typing import List
 import uuid
 
 router = APIRouter(prefix="/api/ml", tags=["ml"])
+
+@router.get("/score/{user_id}")
+async def get_financial_resilience_score(
+    user_id: str,
+    session: AsyncSession = Depends(get_session)
+):
+    """
+    Calculates the financial resilience score (1-100) for a user.
+    """
+    # 1. Fetch user items and transactions
+    statement = select(User).where(User.external_id == user_id)
+    result = await session.execute(statement)
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Fetch all transactions for this user's items
+    transaction_statement = select(Transaction).join(Transaction.item).where(Transaction.item.has(user_id=user.id))
+    result = await session.execute(transaction_statement)
+    transactions = result.scalars().all()
+
+    if not transactions:
+        return {"score": 0, "status": "No transactions found to score."}
+
+    # 2. Extract features
+    features = extract_features(transactions)
+    
+    # 3. Load model and predict
+    model_path = "app/resources/risk_model.pkl"
+    if not os.path.exists(model_path):
+        raise HTTPException(status_code=500, detail="Risk model not found. Run training script first.")
+    
+    model = joblib.load(model_path)
+    
+    # X needs to be a 2D array for scikit-learn
+    feature_values = [
+        features["income_to_rent_ratio"],
+        features["monthly_utility_consistency"],
+        features["discretionary_spend_ratio"]
+    ]
+    
+    # RandomForestClassifier.predict_proba returns probability for both classes [low, high]
+    # We use the probability of being 'resilient' (higher score)
+    probability = model.predict_proba([feature_values])[0][1]
+    score = int(probability * 100)
+    
+    return {
+        "user_id": user_id,
+        "score": score,
+        "features": features
+    }
 
 @router.post("/categorize")
 async def batch_categorize_transactions(
