@@ -60,6 +60,42 @@ async def get_financial_resilience_score(
         "features": features
     }
 
+@router.get("/stats/{user_id}")
+async def get_user_stats(
+    user_id: str,
+    session: AsyncSession = Depends(get_session)
+):
+    """
+    Returns aggregated spending by category for the dashboard.
+    """
+    statement = select(User).where(User.external_id == user_id)
+    result = await session.execute(statement)
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Fetch all transactions with categories
+    transaction_statement = select(Transaction).join(Transaction.item).where(Transaction.item.has(user_id=user.id))
+    result = await session.execute(transaction_statement)
+    transactions = result.scalars().all()
+
+    # Aggregate by category
+    stats = {}
+    for t in transactions:
+        cat = t.llm_category or "Unclassified"
+        stats[cat] = stats.get(cat, 0.0) + t.amount
+
+    # Format for Tremor DonutChart
+    chart_data = [
+        {"name": k, "value": abs(v)} for k, v in stats.items()
+    ]
+
+    return {
+        "total_transactions": len(transactions),
+        "chart_data": chart_data
+    }
+
 @router.post("/categorize")
 async def batch_categorize_transactions(
     session: AsyncSession = Depends(get_session)
