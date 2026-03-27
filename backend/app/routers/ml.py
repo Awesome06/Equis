@@ -1,3 +1,7 @@
+from fastapi import APIRouter, Depends, HTTPException
+from sqlmodel import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.database import get_session
 from app.models import Transaction, User
 from app.services.gemini_client import categorize_transactions
 from app.services.risk_engine import extract_features
