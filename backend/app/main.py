@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.database import create_db_and_tables
+from app.routers.plaid import router as plaid_router
 
 # Import models so SQLModel registers their metadata before table creation.
 import app.models  # noqa: F401
@@ -42,6 +43,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(plaid_router)
 
 
 # ── Health check ──────────────────────────────────────────────────────────────
