@@ -43,15 +43,27 @@ Traditional credit bureaus penalize millions of financially responsible individu
 ## 💻 Local Development Setup
 
 ### Prerequisites
-* Node.js (v18+)
-* Python (3.10+)
-* API Keys: Plaid (Sandbox), Google Gemini
-* PostgreSQL Database URL (Supabase or Neon)
+* **Node.js**: (v18+)
+* **Python**: (3.10+)
+* **API Keys**: Plaid (Sandbox), Google Gemini
+* **PostgreSQL**: Database URL (Supabase or Neon)
 
-### 1. Backend Setup (FastAPI)
-Navigate to the backend directory and set up your Python environment:
-```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
+### 🚀 Getting Started (Streamlined)
+
+We have provided PowerShell scripts to automate the setup and runtime process on Windows.
+
+#### 1. Initial Setup
+Run the following command in your terminal (at the project root) to set up virtual environments, install all dependencies, and create environment files:
+```powershell
+./setup.ps1
+```
+
+#### 2. Running the Project
+To launch both the FastAPI backend and Next.js frontend in separate windows:
+```powershell
+./run_dev.ps1
+```
+
+---
+
+*The David Protocol — Empowering the Credit Invisible.*
