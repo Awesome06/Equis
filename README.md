@@ -26,13 +26,13 @@ Traditional credit bureaus penalize millions of financially responsible individu
 * **Risk Engine:** Scikit-Learn / XGBoost (Deterministic Classification)
 
 **External APIs**
-* **Financial Data:** [Plaid API](https://plaid.com/) (Sandbox Environment)
+* **Financial Data:** [Setu API](https://plaid.com/) (Sandbox Environment)
 
 ---
 
 ## 🧠 How It Works (The Pipeline)
 
-1. **Secure Authentication:** Users link their bank accounts via the Plaid Link modal (Zero credentials stored on our servers).
+1. **Secure Authentication:** Users link their bank accounts via the Setu Link modal (Zero credentials stored on our servers).
 2. **Data Ingestion:** The FastAPI backend fetches up to 90 days of raw transaction history.
 3. **AI Cleaning (The Smart Layer):** Raw, messy transaction strings (e.g., `ACH*T-MOBILE WEB PYMT XXXXX992`) are batched and sent to the Gemini API, which categorizes them strictly into `Rent`, `Utilities`, `Income`, or `Discretionary`.
 4. **Deterministic Scoring (The Safe Layer):** The categorized data is evaluated by our XGBoost model against key features (e.g., Income-to-Rent ratio, utility payment consistency) to generate a **Financial Resilience Score (1-100)**.
@@ -45,7 +45,7 @@ Traditional credit bureaus penalize millions of financially responsible individu
 ### Prerequisites
 * **Node.js**: (v18+)
 * **Python**: (3.10+)
-* **API Keys**: Plaid (Sandbox), Google Gemini
+* **API Keys**: Setu (Sandbox), Google Gemini
 * **PostgreSQL**: Database URL (Supabase or Neon)
 
 ### 🚀 Getting Started (Streamlined)
